@@ -53,6 +53,13 @@
       transform: scale(1.05);
     }
   </style>
+
+  <script>
+    // Verifica si ya hay sesión iniciada
+    if (localStorage.getItem("sesionIniciada") === "true") {
+      window.location.href = "chat.html";
+    }
+  </script>
 </head>
 <body>
   <h1>Veyno Chat</h1>
