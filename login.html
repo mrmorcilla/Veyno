@@ -81,17 +81,18 @@
       const userName = form.userName.value.trim();
       const password = form.password.value;
 
-      // Aquí podrías validar la contraseña si quieres (o hacer llamada a Firebase Auth)
-
       if(!userId || !userName || !password){
         alert("Completa todos los campos");
         return;
       }
 
-      // Guardar en localStorage
+      // Guardar datos de usuario en localStorage
       localStorage.setItem('currentUserId', userId);
       localStorage.setItem('currentUserName', userName);
       localStorage.setItem('currentUserPassword', password);
+
+      // ✅ Marcar que la sesión está iniciada
+      localStorage.setItem('sesionIniciada', 'true');
 
       // Redirigir a chat.html
       window.location.href = 'chat.html';
