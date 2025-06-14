@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Veyno Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #1e90ff;
+      --background: #121212;
+      --card: #1e1e1e;
+      --text: #e0e0e0;
+      --muted: #888;
+      --border: #2a2a2a;
+    }
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      display: flex; flex-direction: column; height: 100vh;
+    }
+    header {
+      background: var(--card);
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+    #btn-logout {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 1.8rem;
+      cursor: pointer;
+      user-select: none;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      transition: color 0.2s ease;
+    }
+    #btn-logout:hover {
+      color: #63b3ff;
+    }
+    #btn-logout svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+    #logo {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    #chat-list {
+      width: 250px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat-list h2 {
+      margin-bottom: 10px;
+      color: var(--primary);
+      font-size: 1.2rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 8px;
+      margin-bottom: 15px;
+      user-select: none;
+    }
+    #chat-list ul {
+      list-style: none;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    #chat-list li {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    #chat-list li.active {
+      background: var(--primary);
+      color: var(--background);
+      font-weight: bold;
+    }
+    #chat-list button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      user-select: none;
+    }
+    #chat-window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      padding: 15px;
+      overflow: hidden;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      user-select: text;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: #2a2a2a;
+      max-width: 70%;
+      word-wrap: break-word;
+      user-select: text;
+    }
+    .message.you {
+      background: var(--primary);
+      color: var(--background);
+      align-self: flex-end;
+    }
+    .message.other {
+      background: #444;
+      color: var(--text);
+      align-self: flex-start;
+    }
+    #input-area {
+      display: flex;
+      gap: 8px;
+    }
+    #input-message {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      user-select: text;
+    }
+    #send-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      user-select: none;
+    }
+
+    /* Panel miembros a la derecha */
+    #members-panel {
+      width: 280px;
+      background: #2a2a2a;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      overflow-y: auto;
+      user-select: none;
+    }
+    #members-panel.hidden {
+      display: none;
+    }
+    #members-panel h3 {
+      color: var(--primary);
+      margin-bottom: 12px;
+      user-select: none;
+    }
+    #members-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 10px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    #members-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    #members-list button {
+      background: #ff4444;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      user-select: none;
+    }
+    #add-member-input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 8px;
+      font-size: 1rem;
+      user-select: text;
+    }
+    #add-member-btn {
+      background: var(--primary);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button id="btn-logout" title="Cerrar sesión" aria-label="Cerrar sesión">
+      <!-- Flecha atrás SVG -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path d="M19 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H19v-2z"/>
+      </svg>
+    </button>
+    <div id="logo">Veyno Chat</div>
+  </header>
+  <main>
+    <section id="chat-list">
+      <h2>Chats</h2>
+      <ul id="chats-ul"></ul>
+      <button id="btn-add-chat">+ Añadir chat</button>
+    </section>
+
+    <section id="chat-window">
+      <div id="messages"></div>
+      <div id="input-area">
+        <input id="input-message" type="text" placeholder="Escribe un mensaje..." autocomplete="off" />
+        <button id="send-btn">Enviar</button>
+      </div>
+    </section>
+
+    <section id="members-panel" class="hidden">
+      <h3>Miembros del grupo</h3>
+      <ul id="members-list"></ul>
+      <input id="add-member-input" type="text" placeholder="ID del usuario a añadir" />
+      <button id="add-member-btn">Añadir miembro</button>
+    </section>
+  </main>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import {
+      ref,
+      onValue,
+      push,
+      set,
+      update,
+      remove,
+      get,
+      child,
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+    const currentUserId = localStorage.getItem('currentUserId') || prompt("Ingresa tu ID de usuario:");
+    const currentUserName = localStorage.getItem('currentUserName') || prompt("Ingresa tu nombre:");
+
+    if (!currentUserId || !currentUserName) {
+      alert("Necesitas un usuario para continuar.");
+      throw new Error("No hay usuario");
+    }
+    localStorage.setItem('currentUserId', currentUserId);
+    localStorage.setItem('currentUserName', currentUserName);
+
+    const chatsListEl = document.getElementById('chats-ul');
+    const messagesEl = document.getElementById('messages');
+    const inputMessage = document.getElementById('input-message');
+    const sendBtn = document.getElementById('send-btn');
+    const btnAddChat = document.getElementById('btn-add-chat');
+
+    const membersPanel = document.getElementById('members-panel');
+    const membersListEl = document.getElementById('members-list');
+    const addMemberInput = document.getElementById('add-member-input');
+    const addMemberBtn = document.getElementById('add-member-btn');
+
+    const btnLogout = document.getElementById('btn-logout');
+
+    let chats = {};
+    let activeChatId = null;
+    let activeChatData = null;
+
+    function listenChats() {
+      const chatsRef = ref(db, 'chats');
+      onValue(chatsRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        chats = {};
+
+        for (const [chatId, chatData] of Object.entries(data)) {
+          if (chatData.usuarios && chatData.usuarios[currentUserId]) {
+            chats[chatId] = chatData;
+          }
+        }
+        renderChatList();
+
+        if (!activeChatId || !chats[activeChatId]) {
+          const firstChat = Object.keys(chats)[0];
+          if (firstChat) {
+            setActiveChat(firstChat);
+          } else {
+            messagesEl.innerHTML = "<p style='color: var(--muted);'>No estás en ningún chat. Añade uno con + Añadir chat.</p>";
+            membersPanel.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    function renderChatList() {
+      chatsListEl.innerHTML = '';
+      for (const [chatId, chatData] of Object.entries(chats)) {
+        const li = document.createElement('li');
+        li.textContent = chatData.nombre || chatId;
+        li.dataset.chatId = chatId;
+        li.classList.toggle('active', chatId === activeChatId);
+        li.addEventListener('click', () => setActiveChat(chatId));
+        chatsListEl.appendChild(li);
+      }
+    }
+
+    let unsubscribeMessages = null;
+    function listenMessages(chatId) {
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      messagesEl.innerHTML = "<p style='color: var(--muted);'>Cargando mensajes...</p>";
+
+      const messagesRef = ref(db, `chats/${chatId}/mensajes`);
+      unsubscribeMessages = onValue(messagesRef, (snapshot) => {
+        const messagesData = snapshot.val() || {};
+        renderMessages(messagesData);
+      });
+
+      // También obtener info del chat para miembros y owner
+      const chatRef = ref(db, `chats/${chatId}`);
+      get(chatRef).then(snapshot => {
+        activeChatData = snapshot.val();
+        renderMembersPanel();
+      });
+    }
+
+    function renderMessages(messagesData) {
+      messagesEl.innerHTML = '';
+      const orderedMessages = Object.entries(messagesData)
+        .sort((a, b) => a[1].timestamp - b[1].timestamp);
+
+      if (orderedMessages.length === 0) {
+        messagesEl.innerHTML = "<p style='color: var(--muted);'>No hay mensajes. Sé el primero en escribir.</p>";
+        return;
+      }
+
+      for (const [msgId, msg] of orderedMessages) {
+        const div = document.createElement('div');
+        div.classList.add('message');
+        if (msg.usuarioId === currentUserId) {
+          div.classList.add('you');
+        } else {
+          div.classList.add('other');
+        }
+        div.textContent = `${msg.usuarioNombre}: ${msg.texto}`;
+        messagesEl.appendChild(div);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function setActiveChat(chatId) {
+      activeChatId = chatId;
+      renderChatList();
+      listenMessages(chatId);
+    }
+
+    async function sendMessage() {
+      const texto = inputMessage.value.trim();
+      if (!texto || !activeChatId) return;
+
+      const messagesRef = ref(db, `chats/${activeChatId}/mensajes`);
+      const newMsgRef = push(messagesRef);
+
+      await set(newMsgRef, {
+        texto,
+        usuarioId: currentUserId,
+        usuarioNombre: currentUserName,
+        timestamp: Date.now(),
+      });
+
+      inputMessage.value = '';
+      inputMessage.focus();
+    }
+
+    async function addChat() {
+      const chatName = prompt("Nombre del chat:");
+      if (!chatName) return alert("Nombre requerido");
+
+      const userIdsRaw = prompt("IDs de usuarios a invitar, separados por coma:");
+      if (!userIdsRaw) return alert("Debes agregar al menos un usuario");
+
+      const userIds = userIdsRaw.split(',').map(id => id.trim());
+      if (!userIds.includes(currentUserId)) userIds.push(currentUserId);
+
+      const chatsRef = ref(db, 'chats');
+      const newChatRef = push(chatsRef);
+
+      const usuarios = {};
+      userIds.forEach(id => usuarios[id] = true);
+
+      await set(newChatRef, {
+        nombre: chatName,
+        ownerId: currentUserId,
+        usuarios,
+        mensajes: {}
+      });
+    }
+
+    function renderMembersPanel() {
+      if (!activeChatData || !activeChatData.usuarios) {
+        membersPanel.classList.add('hidden');
+        return;
+      }
+      if (Object.keys(activeChatData.usuarios).length <= 1) {
+        membersPanel.classList.add('hidden');
+        return;
+      }
+
+      membersPanel.classList.remove('hidden');
+      membersListEl.innerHTML = '';
+
+      for (const userId of Object.keys(activeChatData.usuarios)) {
+        const li = document.createElement('li');
+        li.textContent = userId;
+        if (userId === activeChatData.ownerId) {
+          li.textContent += " (Owner)";
+        }
+        if (currentUserId === activeChatData.ownerId && userId !== activeChatData.ownerId) {
+          const btnRemove = document.createElement('button');
+          btnRemove.textContent = "Quitar";
+          btnRemove.addEventListener('click', () => removeMember(userId));
+          li.appendChild(btnRemove);
+        }
+        membersListEl.appendChild(li);
+      }
+
+      if (currentUserId === activeChatData.ownerId) {
+        addMemberInput.style.display = "block";
+        addMemberBtn.style.display = "block";
+      } else {
+        addMemberInput.style.display = "none";
+        addMemberBtn.style.display = "none";
+      }
+    }
+
+    async function addMember() {
+      const newUserId = addMemberInput.value.trim();
+      if (!newUserId) return alert("Escribe un ID válido");
+
+      if (activeChatData.usuarios[newUserId]) {
+        return alert("El usuario ya es miembro del chat");
+      }
+
+      const usuariosRef = ref(db, `chats/${activeChatId}/usuarios/${newUserId}`);
+      await set(usuariosRef, true);
+
+      const chatRef = ref(db, `chats/${activeChatId}`);
+      activeChatData = (await get(chatRef)).val();
+
+      addMemberInput.value = '';
+      renderMembersPanel();
+    }
+
+    async function removeMember(userIdToRemove) {
+      if (!confirm(`¿Seguro que quieres quitar al usuario ${userIdToRemove}?`)) return;
+
+      if (userIdToRemove === activeChatData.ownerId) {
+        return alert("No puedes quitar al owner del grupo.");
+      }
+
+      const usuarioRef = ref(db, `chats/${activeChatId}/usuarios/${userIdToRemove}`);
+      await remove(usuarioRef);
+
+      const chatRef = ref(db, `chats/${activeChatId}`);
+      activeChatData = (await get(chatRef)).val();
+
+      renderMembersPanel();
+    }
+
+    btnLogout.addEventListener('click', () => {
+      if (confirm("¿Cerrar sesión?")) {
+        localStorage.removeItem('currentUserId');
+        localStorage.removeItem('currentUserName');
+        location.reload();
+      }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputMessage.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+    btnAddChat.addEventListener('click', addChat);
+    addMemberBtn.addEventListener('click', addMember);
+
+    listenChats();
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Veyno Chat - Inicio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #1e90ff;
+      --background: #121212;
+      --card: #1e1e1e;
+      --text: #e0e0e0;
+      --muted: #888;
+      --border: #2a2a2a;
+    }
+    body {
+      background: var(--background);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 0.2em;
+      color: var(--primary);
+      text-shadow: 0 0 10px var(--primary);
+    }
+    p {
+      margin-bottom: 2em;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+    button {
+      background-color: var(--primary);
+      border: none;
+      padding: 15px 35px;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(30,144,255,0.7);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #187bcd;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>Veyno Chat</h1>
+  <p>La plataforma para chatear fácil y seguro.</p>
+  <button onclick="location.href='login.html'">Ingresar / Registrarse</button>
+</body>
+</html>
