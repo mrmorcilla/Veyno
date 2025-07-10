@@ -459,30 +459,27 @@
   </main>
 
   <script type="module">
-    // Simulación de datos para demo (reemplaza con tu Firebase)
-    let chats = {
-      'chat1': {
-        nombre: 'Grupo General',
-        ownerId: 'user1',
-        usuarios: { 'user1': true, 'user2': true, 'user3': true },
-        mensajes: {
-          'msg1': { texto: 'Hola a todos!', usuarioId: 'user1', usuarioNombre: 'Ana', timestamp: Date.now() - 10000 },
-          'msg2': { texto: 'Cómo están?', usuarioId: 'user2', usuarioNombre: 'Carlos', timestamp: Date.now() - 5000 },
-          'msg3': { texto: 'Todo bien por aquí', usuarioId: 'user1', usuarioNombre: 'Ana', timestamp: Date.now() - 2000 }
-        }
-      },
-      'chat2': {
-        nombre: 'Trabajo',
-        ownerId: 'user1',
-        usuarios: { 'user1': true, 'user2': true },
-        mensajes: {
-          'msg1': { texto: 'Reunión a las 3', usuarioId: 'user2', usuarioNombre: 'Carlos', timestamp: Date.now() - 8000 }
-        }
-      }
-    };
+    import { db } from './js/firebase-config.js';
+    import {
+      ref,
+      onValue,
+      push,
+      set,
+      update,
+      remove,
+      get,
+      child,
+    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 
-    const currentUserId = 'user1';
-    const currentUserName = 'Ana';
+    const currentUserId = localStorage.getItem('currentUserId') || prompt("Ingresa tu ID de usuario:");
+    const currentUserName = localStorage.getItem('currentUserName') || prompt("Ingresa tu nombre:");
+
+    if (!currentUserId || !currentUserName) {
+      alert("Necesitas un usuario para continuar.");
+      throw new Error("No hay usuario");
+    }
+    localStorage.setItem('currentUserId', currentUserId);
+    localStorage.setItem('currentUserName', currentUserName);
 
     const chatsListEl = document.getElementById('chats-ul');
     const messagesEl = document.getElementById('messages');
@@ -495,6 +492,7 @@
     const addMemberBtn = document.getElementById('add-member-btn');
     const btnLogout = document.getElementById('btn-logout');
 
+    let chats = {};
     let activeChatId = null;
     let activeChatData = null;
 
@@ -502,6 +500,31 @@
     const chatList = document.getElementById('chat-list');
     const toggleChatListBtn = document.getElementById('btn-toggle-chatlist');
     const toggleMembersBtn = document.getElementById('btn-toggle-members');
+
+    function listenChats() {
+      const chatsRef = ref(db, 'chats');
+      onValue(chatsRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        chats = {};
+
+        for (const [chatId, chatData] of Object.entries(data)) {
+          if (chatData.usuarios && chatData.usuarios[currentUserId]) {
+            chats[chatId] = chatData;
+          }
+        }
+        renderChatList();
+
+        if (!activeChatId || !chats[activeChatId]) {
+          const firstChat = Object.keys(chats)[0];
+          if (firstChat) {
+            setActiveChat(firstChat);
+          } else {
+            messagesEl.innerHTML = "<p style='color: var(--muted); text-align: center; padding: 2rem;'>No estás en ningún chat. Añade uno con + Añadir chat.</p>";
+            membersPanel.classList.add('hidden');
+          }
+        }
+      });
+    }
 
     // Event listeners para responsive
     toggleChatListBtn.addEventListener('click', () => {
@@ -556,6 +579,26 @@
         });
         chatsListEl.appendChild(li);
       }
+    }
+
+    let unsubscribeMessages = null;
+    function listenMessages(chatId) {
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      messagesEl.innerHTML = "<p style='color: var(--muted); text-align: center; padding: 2rem;'>Cargando mensajes...</p>";
+
+      const messagesRef = ref(db, `chats/${chatId}/mensajes`);
+      unsubscribeMessages = onValue(messagesRef, (snapshot) => {
+        const messagesData = snapshot.val() || {};
+        renderMessages(messagesData);
+      });
+
+      // También obtener info del chat para miembros y owner
+      const chatRef = ref(db, `chats/${chatId}`);
+      get(chatRef).then(snapshot => {
+        activeChatData = snapshot.val();
+        renderMembersPanel();
+      });
     }
 
     function renderMessages(messagesData) {
