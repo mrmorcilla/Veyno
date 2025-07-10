@@ -294,12 +294,15 @@
       }
 
       #chat-list {
-        position: absolute;
-        top: 0;
-        left: -280px;
-        height: 100%;
-        z-index: 100;
+        position: fixed;
+        top: var(--header-height);
+        left: -100%;
+        width: 85%;
+        max-width: 300px;
+        height: calc(100vh - var(--header-height));
+        z-index: 200;
         transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
       }
 
       #chat-list.show {
@@ -308,15 +311,19 @@
 
       #chat-window {
         width: 100%;
+        height: calc(100vh - var(--header-height));
       }
 
       #members-panel {
-        position: absolute;
-        top: 0;
-        right: -280px;
-        height: 100%;
-        z-index: 100;
+        position: fixed;
+        top: var(--header-height);
+        right: -100%;
+        width: 85%;
+        max-width: 300px;
+        height: calc(100vh - var(--header-height));
+        z-index: 200;
         transition: right 0.3s ease;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
       }
 
       #members-panel.show {
@@ -329,6 +336,8 @@
 
       #input-area {
         padding: 0.75rem;
+        background: white;
+        border-top: 1px solid var(--border-color);
       }
 
       #input-message {
@@ -340,8 +349,7 @@
       }
 
       /* Overlay para cerrar paneles */
-      #chat-list.show::before,
-      #members-panel.show::before {
+      body::before {
         content: '';
         position: fixed;
         top: 0;
@@ -349,7 +357,15 @@
         right: 0;
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
+        z-index: 150;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      body.panel-open::before {
+        opacity: 1;
+        visibility: visible;
       }
     }
 
@@ -384,6 +400,22 @@
       .message {
         max-width: 90%;
         padding: 0.5rem;
+      }
+
+      #chat-list,
+      #members-panel {
+        width: 90%;
+        max-width: none;
+      }
+
+      header {
+        padding: 0 0.5rem;
+      }
+
+      #btn-toggle-chatlist,
+      #btn-toggle-members {
+        padding: 6px 10px;
+        font-size: 1.1rem;
       }
     }
   </style>
@@ -477,6 +509,8 @@
       if (membersPanel.classList.contains('show')) {
         membersPanel.classList.remove('show');
       }
+      // Agregar clase al body para el overlay
+      document.body.classList.toggle('panel-open', chatList.classList.contains('show'));
     });
 
     toggleMembersBtn.addEventListener('click', () => {
@@ -484,16 +518,23 @@
       if (chatList.classList.contains('show')) {
         chatList.classList.remove('show');
       }
+      // Agregar clase al body para el overlay
+      document.body.classList.toggle('panel-open', membersPanel.classList.contains('show'));
     });
 
-    // Cerrar paneles al hacer click fuera (solo en móvil)
+    // Cerrar paneles al hacer click en el overlay
     document.addEventListener('click', (e) => {
       if (window.innerWidth <= 768) {
-        if (!chatList.contains(e.target) && !toggleChatListBtn.contains(e.target)) {
+        // Si se hace click en el overlay
+        if (document.body.classList.contains('panel-open') && 
+            !chatList.contains(e.target) && 
+            !membersPanel.contains(e.target) && 
+            !toggleChatListBtn.contains(e.target) && 
+            !toggleMembersBtn.contains(e.target)) {
+          
           chatList.classList.remove('show');
-        }
-        if (!membersPanel.contains(e.target) && !toggleMembersBtn.contains(e.target)) {
           membersPanel.classList.remove('show');
+          document.body.classList.remove('panel-open');
         }
       }
     });
@@ -510,6 +551,7 @@
           // Cerrar panel en móvil después de seleccionar
           if (window.innerWidth <= 768) {
             chatList.classList.remove('show');
+            document.body.classList.remove('panel-open');
           }
         });
         chatsListEl.appendChild(li);
