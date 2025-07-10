@@ -4,22 +4,405 @@
   <meta charset="UTF-8" />
   <title>Veyno Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #007bff;
+      --secondary-color: #6c757d;
+      --background-color: #f8f9fa;
+      --text-color: #212529;
+      --border-color: #dee2e6;
+      --message-bg: #e9ecef;
+      --message-you-bg: #007bff;
+      --message-you-text: white;
+      --muted: #6c757d;
+      --header-height: 60px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: white;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      border-bottom: 1px solid var(--border-color);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    #btn-logout {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      margin-right: 1rem;
+    }
+
+    #btn-logout:hover {
+      background-color: var(--background-color);
+    }
+
+    #btn-logout svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-color);
+    }
+
+    #logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    #btn-toggle-chatlist,
+    #btn-toggle-members {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 1.2rem;
+      margin-left: 0.5rem;
+    }
+
+    #btn-toggle-chatlist:hover,
+    #btn-toggle-members:hover {
+      background-color: var(--background-color);
+    }
+
+    /* Main container */
+    main {
+      display: flex;
+      height: 100vh;
+      padding-top: var(--header-height);
+    }
+
+    /* Chat list */
+    #chat-list {
+      width: 280px;
+      background: white;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    #chat-list h2 {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 1.1rem;
+    }
+
+    #chats-ul {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    #chats-ul li {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.2s;
+    }
+
+    #chats-ul li:hover {
+      background-color: var(--background-color);
+    }
+
+    #chats-ul li.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    #btn-add-chat {
+      margin: 1rem;
+      padding: 0.75rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    #btn-add-chat:hover {
+      background: #0056b3;
+    }
+
+    /* Chat window */
+    #chat-window {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      position: relative;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 0.75rem;
+      border-radius: 12px;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    .message.other {
+      background: var(--message-bg);
+      align-self: flex-start;
+    }
+
+    .message.you {
+      background: var(--message-you-bg);
+      color: var(--message-you-text);
+      align-self: flex-end;
+    }
+
+    #input-area {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    #input-message {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    #input-message:focus {
+      border-color: var(--primary-color);
+    }
+
+    #send-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    #send-btn:hover {
+      background: #0056b3;
+    }
+
+    /* Members panel */
+    #members-panel {
+      width: 280px;
+      background: white;
+      border-left: 1px solid var(--border-color);
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    #members-panel h3 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    #members-list {
+      list-style: none;
+      margin-bottom: 1rem;
+    }
+
+    #members-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #members-list button {
+      padding: 0.25rem 0.5rem;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    #add-member-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    #add-member-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      #btn-toggle-chatlist,
+      #btn-toggle-members {
+        display: block;
+      }
+
+      main {
+        position: relative;
+      }
+
+      #chat-list {
+        position: absolute;
+        top: 0;
+        left: -280px;
+        height: 100%;
+        z-index: 100;
+        transition: left 0.3s ease;
+      }
+
+      #chat-list.show {
+        left: 0;
+      }
+
+      #chat-window {
+        width: 100%;
+      }
+
+      #members-panel {
+        position: absolute;
+        top: 0;
+        right: -280px;
+        height: 100%;
+        z-index: 100;
+        transition: right 0.3s ease;
+      }
+
+      #members-panel.show {
+        right: 0;
+      }
+
+      .message {
+        max-width: 85%;
+      }
+
+      #input-area {
+        padding: 0.75rem;
+      }
+
+      #input-message {
+        font-size: 16px; /* Evita zoom en iOS */
+      }
+
+      #send-btn {
+        padding: 0.75rem 1rem;
+      }
+
+      /* Overlay para cerrar paneles */
+      #chat-list.show::before,
+      #members-panel.show::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+      }
+    }
+
+    /* Desktop styles */
+    @media (min-width: 769px) {
+      #btn-toggle-chatlist,
+      #btn-toggle-members {
+        display: none;
+      }
+
+      #chat-list,
+      #members-panel {
+        position: static;
+        transform: none;
+      }
+    }
+
+    /* Very small screens */
+    @media (max-width: 480px) {
+      #logo {
+        font-size: 1rem;
+      }
+
+      #input-area {
+        padding: 0.5rem;
+      }
+
+      #messages {
+        padding: 0.5rem;
+      }
+
+      .message {
+        max-width: 90%;
+        padding: 0.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
     <button id="btn-logout" title="Cerrar sesión" aria-label="Cerrar sesión">
-      <!-- Flecha atrás SVG -->
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <path d="M19 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H19v-2z"/>
       </svg>
     </button>
 
     <button id="btn-toggle-chatlist" title="Ver chats" aria-label="Ver chats">☰</button>
-    <button id="btn-toggle-members" title="Ver miembros" aria-label="Ver miembros"> ☺ </button>
-
+    
     <div id="logo">Veyno Chat</div>
+    
+    <button id="btn-toggle-members" title="Ver miembros" aria-label="Ver miembros">☺</button>
   </header>
+
   <main>
     <section id="chat-list">
       <h2>Chats</h2>
@@ -44,84 +427,76 @@
   </main>
 
   <script type="module">
-    import { db } from './js/firebase-config.js';
-    import {
-      ref,
-      onValue,
-      push,
-      set,
-      update,
-      remove,
-      get,
-      child,
-    } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+    // Simulación de datos para demo (reemplaza con tu Firebase)
+    let chats = {
+      'chat1': {
+        nombre: 'Grupo General',
+        ownerId: 'user1',
+        usuarios: { 'user1': true, 'user2': true, 'user3': true },
+        mensajes: {
+          'msg1': { texto: 'Hola a todos!', usuarioId: 'user1', usuarioNombre: 'Ana', timestamp: Date.now() - 10000 },
+          'msg2': { texto: 'Cómo están?', usuarioId: 'user2', usuarioNombre: 'Carlos', timestamp: Date.now() - 5000 },
+          'msg3': { texto: 'Todo bien por aquí', usuarioId: 'user1', usuarioNombre: 'Ana', timestamp: Date.now() - 2000 }
+        }
+      },
+      'chat2': {
+        nombre: 'Trabajo',
+        ownerId: 'user1',
+        usuarios: { 'user1': true, 'user2': true },
+        mensajes: {
+          'msg1': { texto: 'Reunión a las 3', usuarioId: 'user2', usuarioNombre: 'Carlos', timestamp: Date.now() - 8000 }
+        }
+      }
+    };
 
-    const currentUserId = localStorage.getItem('currentUserId') || prompt("Ingresa tu ID de usuario:");
-    const currentUserName = localStorage.getItem('currentUserName') || prompt("Ingresa tu nombre:");
-
-    if (!currentUserId || !currentUserName) {
-      alert("Necesitas un usuario para continuar.");
-      throw new Error("No hay usuario");
-    }
-    localStorage.setItem('currentUserId', currentUserId);
-    localStorage.setItem('currentUserName', currentUserName);
+    const currentUserId = 'user1';
+    const currentUserName = 'Ana';
 
     const chatsListEl = document.getElementById('chats-ul');
     const messagesEl = document.getElementById('messages');
     const inputMessage = document.getElementById('input-message');
     const sendBtn = document.getElementById('send-btn');
     const btnAddChat = document.getElementById('btn-add-chat');
-
     const membersPanel = document.getElementById('members-panel');
     const membersListEl = document.getElementById('members-list');
     const addMemberInput = document.getElementById('add-member-input');
     const addMemberBtn = document.getElementById('add-member-btn');
-
     const btnLogout = document.getElementById('btn-logout');
 
-    let chats = {};
     let activeChatId = null;
     let activeChatData = null;
 
-    function listenChats() {
-      const chatsRef = ref(db, 'chats');
-      onValue(chatsRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        chats = {};
-
-        for (const [chatId, chatData] of Object.entries(data)) {
-          if (chatData.usuarios && chatData.usuarios[currentUserId]) {
-            chats[chatId] = chatData;
-          }
-        }
-        renderChatList();
-
-        if (!activeChatId || !chats[activeChatId]) {
-          const firstChat = Object.keys(chats)[0];
-          if (firstChat) {
-            setActiveChat(firstChat);
-          } else {
-            messagesEl.innerHTML = "<p style='color: var(--muted);'>No estás en ningún chat. Añade uno con + Añadir chat.</p>";
-            membersPanel.classList.add('hidden');
-          }
-        }
-      });
-    }
-
-    //- - - responsive - - -
-    // Mostrar/Ocultar paneles en móvil
+    // Elementos para responsive
     const chatList = document.getElementById('chat-list');
     const toggleChatListBtn = document.getElementById('btn-toggle-chatlist');
-    toggleChatListBtn.addEventListener('click', () => {
-    chatList.classList.toggle('show');
-    });
-
-    // Panel miembros
     const toggleMembersBtn = document.getElementById('btn-toggle-members');
-    toggleMembersBtn.addEventListener('click', () => {
-    membersPanel.classList.toggle('show');
+
+    // Event listeners para responsive
+    toggleChatListBtn.addEventListener('click', () => {
+      chatList.classList.toggle('show');
+      if (membersPanel.classList.contains('show')) {
+        membersPanel.classList.remove('show');
+      }
     });
 
+    toggleMembersBtn.addEventListener('click', () => {
+      membersPanel.classList.toggle('show');
+      if (chatList.classList.contains('show')) {
+        chatList.classList.remove('show');
+      }
+    });
+
+    // Cerrar paneles al hacer click fuera (solo en móvil)
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768) {
+        if (!chatList.contains(e.target) && !toggleChatListBtn.contains(e.target)) {
+          chatList.classList.remove('show');
+        }
+        if (!membersPanel.contains(e.target) && !toggleMembersBtn.contains(e.target)) {
+          membersPanel.classList.remove('show');
+        }
+      }
+    });
 
     function renderChatList() {
       chatsListEl.innerHTML = '';
@@ -130,38 +505,29 @@
         li.textContent = chatData.nombre || chatId;
         li.dataset.chatId = chatId;
         li.classList.toggle('active', chatId === activeChatId);
-        li.addEventListener('click', () => setActiveChat(chatId));
+        li.addEventListener('click', () => {
+          setActiveChat(chatId);
+          // Cerrar panel en móvil después de seleccionar
+          if (window.innerWidth <= 768) {
+            chatList.classList.remove('show');
+          }
+        });
         chatsListEl.appendChild(li);
       }
     }
 
-    let unsubscribeMessages = null;
-    function listenMessages(chatId) {
-      if (unsubscribeMessages) unsubscribeMessages();
-
-      messagesEl.innerHTML = "<p style='color: var(--muted);'>Cargando mensajes...</p>";
-
-      const messagesRef = ref(db, `chats/${chatId}/mensajes`);
-      unsubscribeMessages = onValue(messagesRef, (snapshot) => {
-        const messagesData = snapshot.val() || {};
-        renderMessages(messagesData);
-      });
-
-      // También obtener info del chat para miembros y owner
-      const chatRef = ref(db, `chats/${chatId}`);
-      get(chatRef).then(snapshot => {
-        activeChatData = snapshot.val();
-        renderMembersPanel();
-      });
-    }
-
     function renderMessages(messagesData) {
       messagesEl.innerHTML = '';
+      if (!messagesData) {
+        messagesEl.innerHTML = "<p style='color: var(--muted); text-align: center; padding: 2rem;'>No hay mensajes. Sé el primero en escribir.</p>";
+        return;
+      }
+
       const orderedMessages = Object.entries(messagesData)
         .sort((a, b) => a[1].timestamp - b[1].timestamp);
 
       if (orderedMessages.length === 0) {
-        messagesEl.innerHTML = "<p style='color: var(--muted);'>No hay mensajes. Sé el primero en escribir.</p>";
+        messagesEl.innerHTML = "<p style='color: var(--muted); text-align: center; padding: 2rem;'>No hay mensajes. Sé el primero en escribir.</p>";
         return;
       }
 
@@ -173,7 +539,7 @@
         } else {
           div.classList.add('other');
         }
-        div.textContent = `${msg.usuarioNombre}: ${msg.texto}`;
+        div.innerHTML = `<strong>${msg.usuarioNombre}:</strong> ${msg.texto}`;
         messagesEl.appendChild(div);
       }
       messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -181,50 +547,10 @@
 
     function setActiveChat(chatId) {
       activeChatId = chatId;
+      activeChatData = chats[chatId];
       renderChatList();
-      listenMessages(chatId);
-    }
-
-    async function sendMessage() {
-      const texto = inputMessage.value.trim();
-      if (!texto || !activeChatId) return;
-
-      const messagesRef = ref(db, `chats/${activeChatId}/mensajes`);
-      const newMsgRef = push(messagesRef);
-
-      await set(newMsgRef, {
-        texto,
-        usuarioId: currentUserId,
-        usuarioNombre: currentUserName,
-        timestamp: Date.now(),
-      });
-
-      inputMessage.value = '';
-      inputMessage.focus();
-    }
-
-    async function addChat() {
-      const chatName = prompt("Nombre del chat:");
-      if (!chatName) return alert("Nombre requerido");
-
-      const userIdsRaw = prompt("IDs de usuarios a invitar, separados por coma:");
-      if (!userIdsRaw) return alert("Debes agregar al menos un usuario");
-
-      const userIds = userIdsRaw.split(',').map(id => id.trim());
-      if (!userIds.includes(currentUserId)) userIds.push(currentUserId);
-
-      const chatsRef = ref(db, 'chats');
-      const newChatRef = push(chatsRef);
-
-      const usuarios = {};
-      userIds.forEach(id => usuarios[id] = true);
-
-      await set(newChatRef, {
-        nombre: chatName,
-        ownerId: currentUserId,
-        usuarios,
-        mensajes: {}
-      });
+      renderMessages(activeChatData.mensajes);
+      renderMembersPanel();
     }
 
     function renderMembersPanel() {
@@ -232,6 +558,7 @@
         membersPanel.classList.add('hidden');
         return;
       }
+
       if (Object.keys(activeChatData.usuarios).length <= 1) {
         membersPanel.classList.add('hidden');
         return;
@@ -264,7 +591,45 @@
       }
     }
 
-    async function addMember() {
+    function sendMessage() {
+      const texto = inputMessage.value.trim();
+      if (!texto || !activeChatId) return;
+
+      const newMsgId = 'msg' + Date.now();
+      const newMsg = {
+        texto,
+        usuarioId: currentUserId,
+        usuarioNombre: currentUserName,
+        timestamp: Date.now(),
+      };
+
+      if (!chats[activeChatId].mensajes) {
+        chats[activeChatId].mensajes = {};
+      }
+      chats[activeChatId].mensajes[newMsgId] = newMsg;
+
+      inputMessage.value = '';
+      renderMessages(chats[activeChatId].mensajes);
+      inputMessage.focus();
+    }
+
+    function addChat() {
+      const chatName = prompt("Nombre del chat:");
+      if (!chatName) return;
+
+      const chatId = 'chat' + Date.now();
+      chats[chatId] = {
+        nombre: chatName,
+        ownerId: currentUserId,
+        usuarios: { [currentUserId]: true },
+        mensajes: {}
+      };
+
+      renderChatList();
+      setActiveChat(chatId);
+    }
+
+    function addMember() {
       const newUserId = addMemberInput.value.trim();
       if (!newUserId) return alert("Escribe un ID válido");
 
@@ -272,49 +637,50 @@
         return alert("El usuario ya es miembro del chat");
       }
 
-      const usuariosRef = ref(db, `chats/${activeChatId}/usuarios/${newUserId}`);
-      await set(usuariosRef, true);
-
-      const chatRef = ref(db, `chats/${activeChatId}`);
-      activeChatData = (await get(chatRef)).val();
-
+      activeChatData.usuarios[newUserId] = true;
       addMemberInput.value = '';
       renderMembersPanel();
     }
 
-    async function removeMember(userIdToRemove) {
+    function removeMember(userIdToRemove) {
       if (!confirm(`¿Seguro que quieres quitar al usuario ${userIdToRemove}?`)) return;
 
       if (userIdToRemove === activeChatData.ownerId) {
         return alert("No puedes quitar al owner del grupo.");
       }
 
-      const usuarioRef = ref(db, `chats/${activeChatId}/usuarios/${userIdToRemove}`);
-      await remove(usuarioRef);
-
-      const chatRef = ref(db, `chats/${activeChatId}`);
-      activeChatData = (await get(chatRef)).val();
-
+      delete activeChatData.usuarios[userIdToRemove];
       renderMembersPanel();
     }
 
-    btnLogout.addEventListener('click', () => {
-        btnLogout.addEventListener('click', () => {
-        localStorage.removeItem('currentUserId');
-        localStorage.removeItem('currentUserName');
-        localStorage.removeItem('sesionIniciada');
-        window.location.href = 'login.html';
-        });
-    });
-
+    // Event listeners
     sendBtn.addEventListener('click', sendMessage);
     inputMessage.addEventListener('keydown', e => {
-      if (e.key === 'Enter') sendMessage();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
     });
     btnAddChat.addEventListener('click', addChat);
     addMemberBtn.addEventListener('click', addMember);
+    btnLogout.addEventListener('click', () => {
+      alert('Cerrando sesión...');
+    });
 
-    listenChats();
+    // Inicializar
+    renderChatList();
+    if (Object.keys(chats).length > 0) {
+      setActiveChat(Object.keys(chats)[0]);
+    }
+
+    // Ajustar altura en móviles para evitar problemas con el teclado virtual
+    function adjustHeight() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    window.addEventListener('resize', adjustHeight);
+    adjustHeight();
   </script>
 </body>
 </html>
